@@ -1,5 +1,5 @@
 sources:
-- source: https://github.com/tsmaeder/che-theia
+- source: https://github.com/jpinkney/che-theia
   extensions:
     - extensions/eclipse-che-theia-plugin-remote
     - extensions/eclipse-che-theia-plugin
@@ -19,4 +19,4 @@ sources:
     - plugins/task-plugin
     - plugins/welcome-plugin
     - plugins/ssh-plugin
-  checkoutTo: 13427_workspace_roots
+  checkoutTo: workspace_roots
