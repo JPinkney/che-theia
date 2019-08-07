@@ -45,7 +45,7 @@ RUN if [ ! -z "${GITHUB_TOKEN-}" ]; then \
 ADD https://${GITHUB_TOKEN}:x-oauth-basic@api.github.com/repos/${THEIA_GITHUB_REPO}/git/${GIT_REF} /tmp/branch_info.json
 
 # Clone theia
-RUN git clone --branch ${GIT_BRANCH_NAME}  --single-branch --depth 1 https://github.com/${THEIA_GITHUB_REPO} ${HOME}/theia-source-code
+RUN git clone --branch che-7.0.0 --single-branch --depth 1 https://github.com/${THEIA_GITHUB_REPO} ${HOME}/theia-source-code
 
 # Add patches
 ADD src/patches ${HOME}/patches
@@ -147,6 +147,8 @@ RUN adduser -D -S -u 1001 -G root -h ${HOME} -s /bin/sh theia \
     && find ${HOME} -exec sh -c "chgrp 0 {}; chmod g+rwX {}" \;
 
 COPY --chown=theia:root --from=builder /home/theia-dev/theia-source-code/production /home/theia
+RUN mkdir -p ${HOME}/.theia && chmod -R 777 ${HOME}/.theia
+COPY ["./projects.theia-workspace", "/home/theia/.theia"]
 USER theia
 WORKDIR /projects
 ADD src/entrypoint.sh /entrypoint.sh
