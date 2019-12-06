@@ -12,6 +12,8 @@ sources:
     - extensions/eclipse-che-theia-about
     - extensions/eclipse-che-theia-preferences-provider-extension
     - extensions/eclipse-che-theia-git-provisioner
+    - extensions/eclipse-che-testing-service
+    - extensions/eclipse-che-testing-service-ext
   plugins:
     - plugins/containers-plugin
     - plugins/factory-plugin
@@ -19,4 +21,5 @@ sources:
     - plugins/task-plugin
     - plugins/welcome-plugin
     - plugins/ssh-plugin
+    - plugins/api-test-loader
   checkoutTo: master
