@@ -35,5 +35,6 @@
     "build": "concurrently -n \"format,lint,compile\" -c \"red,green,blue\" \"yarn format\" \"yarn lint\" \"yarn compile\" && yarn run compileWorker",
     "compileWorker": "webpack-cli --config webpack.config.js",
     "watch": "tsc -w"
-  }
+  },
+  "devDependencies": {}
 }
