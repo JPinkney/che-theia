@@ -9,7 +9,8 @@
         "rootDir": "src",
         "outDir": "lib",
         "skipLibCheck": true,
-        "jsx": "react"
+        "jsx": "react",
+        "declaration": true
     },
     "include": [
         "src"
