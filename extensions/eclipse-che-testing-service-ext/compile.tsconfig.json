@@ -1,16 +1,17 @@
 {
-  "extends": "../../configs/base.tsconfig",
-  "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "lib",
-    "lib": [
-      "es6",
-      "dom",
-      "webworker"
+    "extends": "../../configs/base.tsconfig",
+    "compilerOptions": {
+        "lib": [
+            "es6",
+            "dom"
+        ],
+        "sourceMap": true,
+        "rootDir": "src",
+        "outDir": "lib",
+        "skipLibCheck": true,
+        "jsx": "react"
+    },
+    "include": [
+        "src"
     ]
-  },
-  "include": [
-    "src"
-  ]
 }
-

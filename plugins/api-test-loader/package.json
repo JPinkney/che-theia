@@ -12,8 +12,7 @@
 		"vscode": "^1.25.0"
 	},
 	"scripts": {
-		"compile": "tsc -watch -p ./",
-		"postinstall": "node ./node_modules/vscode/bin/install"
+		"compile": "tsc -watch -p ./"
 	},
 	"devDependencies": {
 		"@types/mocha": "2.2.43",
@@ -22,10 +21,10 @@
 		"mocha-junit-reporter": "^1.17.0",
 		"mocha-multi-reporters": "^1.1.7",
 		"ts-mocha": "^6.0.0",
-		"typescript": "^2.0.x",
-		"vscode": "^1.1.5"
+		"typescript": "^2.0.x"
 	},
 	"dependencies": {
+		"@types/vscode": "^1.41.0",
 		"ts-node": "^8.5.2",
 		"vscode-test": "^1.2.3"
 	}
