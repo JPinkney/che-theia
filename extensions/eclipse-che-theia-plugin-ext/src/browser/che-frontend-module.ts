@@ -46,6 +46,11 @@ import { MiniBrowserOpenHandler } from '@theia/mini-browser/lib/browser/mini-bro
 import { WebviewEnvironment } from '@theia/plugin-ext/lib/main/browser/webview/webview-environment';
 import { CheWebviewEnvironment } from './che-webview-environment';
 import { TaskStatusHandler } from './task-status-handler';
+import { ChePluginHandleRegistry } from './che-plugin-handle-registry';
+import { CheLanguagesMainTestImpl } from './che-languages-test-main';
+import { LanguagesMainFactory } from '@theia/plugin-ext';
+import { RPCProtocol } from '@theia/plugin-ext/lib/common/rpc-protocol';
+import { interfaces } from 'inversify';
 
 export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(CheApiProvider).toSelf().inSingletonScope();
@@ -104,4 +109,12 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(MiniBrowserOpenHandler).to(CheMiniBrowserOpenHandler).inSingletonScope();
 
     bind(TaskStatusHandler).toSelf().inSingletonScope();
+
+    bind(ChePluginHandleRegistry).toSelf().inSingletonScope();
+    bind(CheLanguagesMainTestImpl).toSelf().inTransientScope();
+    rebind(LanguagesMainFactory).toFactory((context: interfaces.Context) => (rpc: RPCProtocol) => {
+        const child = context.container.createChild();
+        child.bind(RPCProtocol).toConstantValue(rpc);
+        return child.get(CheLanguagesMainTestImpl);
+    });
 });
