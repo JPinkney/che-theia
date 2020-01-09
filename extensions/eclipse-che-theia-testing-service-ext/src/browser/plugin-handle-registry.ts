@@ -15,7 +15,8 @@
  ********************************************************************************/
 
 import { injectable } from 'inversify';
-import { LanguagesMainTestImpl, LanguageServerActions } from './languages-test-main';
+import { LanguagesMainTestImpl } from './languages-test-main';
+import { LanguageServerActions } from '../common/test-protocol';
 
 /**
  * This class keeps a registry of which plugins map to which handle

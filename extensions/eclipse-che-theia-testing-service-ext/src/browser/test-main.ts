@@ -14,17 +14,22 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ContainerModule } from 'inversify';
-import { LanguagesMainImpl } from '@theia/plugin-ext/lib/main/browser/languages-main';
-import { LanguagesMainTestImpl } from './languages-test-main';
+import { TestMain, LanguageServerActions } from "../common/test-protocol";
 import { PluginHandleRegistry } from './plugin-handle-registry';
-import { MainPluginApiProvider } from '@theia/plugin-ext';
-import { TestApiProvider } from './test-api-provider';
+import { inject } from "inversify";
 
-export default new ContainerModule((bind, unbind, isBound, rebind) => {
-    bind(TestApiProvider).toSelf().inSingletonScope();
-    bind(MainPluginApiProvider).toService(TestApiProvider);
+export class TestMainImpl implements TestMain {
 
-    bind(PluginHandleRegistry).toSelf().inSingletonScope();
-    rebind(LanguagesMainImpl).to(LanguagesMainTestImpl).inTransientScope();
-});
+    @inject(PluginHandleRegistry)
+    private readonly pluginHandleRegistry: PluginHandleRegistry;
+
+    $findHandleForPluginAndAction(pluginID: string, languageAction: LanguageServerActions): Promise<number> {
+        return this.pluginHandleRegistry.findRegisteredLanguagesMain(pluginID, languageAction).then(e => {
+            if (e) {
+                return e.handle;
+            }
+            return 0;
+        });
+    }
+
+}

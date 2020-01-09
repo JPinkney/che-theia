@@ -48,6 +48,7 @@ import {
     WorkspaceEditDto
 } from '@theia/plugin-ext/lib/common/plugin-api-rpc';
 import { SymbolInformation } from 'vscode-languageserver-types';
+import { PLUGIN_RPC_CONTEXT, TestMain } from '../common/test-protocol';
 
 export interface TestApiFactory {
     (plugin: Plugin): typeof testservice;
@@ -57,14 +58,14 @@ export function createAPIFactory(rpc: RPCProtocol): TestApiFactory {
 
     return function (plugin: Plugin): typeof testservice {
 
-        // const testMain = rpc.getProxy(PLUGIN_RPC_CONTEXT.LANGUAGES_MAIN) as unknown as LanguagesMainTestImpl;
+        const testMain = rpc.getProxy(PLUGIN_RPC_CONTEXT.TEST_MAIN) as TestMain;
         const languagesExt = rpc.getProxy(MAIN_RPC_CONTEXT.LANGUAGES_EXT);
 
         const languageserver: typeof testservice.languageserver = {
 
             // tslint:disable
             completion(pluginID: string, resource: UriComponents, position: Position, context: CompletionContext, token: CancellationToken): Promise<CompletionResultDto | undefined> {
-                return languagesExt.$provideCompletionItems(0, resource, position, context, token);
+                return testMain.$findHandleForPluginAndAction(pluginID, 'completion').then(handle => languagesExt.$provideCompletionItems(handle, resource, position, context, token));
             },
             definition(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
                 return languagesExt.$provideDefinition(0, resource, position, token);

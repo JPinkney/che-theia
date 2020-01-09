@@ -21,28 +21,6 @@ import { LanguagesMainImpl } from '@theia/plugin-ext/lib/main/browser/languages-
 import * as theia from '@theia/plugin';
 import { PluginHandleRegistry } from './plugin-handle-registry';
 
-export type LanguageServerActions =
-    'completion' |
-    'definition' |
-    'declaration' |
-    'signatureHelp' |
-    'implementation' |
-    'typeDefinition' |
-    'hover' |
-    'documentHighlight' |
-    'workspaceSymbols' |
-    'documentFormattingEdits' |
-    'documentRangeFormattingEdits' |
-    'onTypeFormattingEdits' |
-    'documentLinks' |
-    'codeActions' |
-    'codeLenses' |
-    'references' |
-    'symbols' |
-    'documentColors' |
-    'foldingRange' |
-    'renameEdits';
-
 @injectable()
 export class LanguagesMainTestImpl extends LanguagesMainImpl {
 
