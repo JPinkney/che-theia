@@ -1,5 +1,5 @@
 sources:
-- source: https://github.com/eclipse/che-theia
+- source: https://github.com/jpinkney/che-theia
   extensions:
     - extensions/eclipse-che-theia-plugin-remote
     - extensions/eclipse-che-theia-plugin
@@ -22,4 +22,4 @@ sources:
     - plugins/welcome-plugin
     - plugins/ssh-plugin
     - plugins/telemetry-plugin
-  checkoutTo: master
+  checkoutTo: testing-ext3
