@@ -16,10 +16,10 @@
 
 import { ContainerModule } from 'inversify';
 import { LanguagesMainImpl } from '@theia/plugin-ext/lib/main/browser/languages-main';
-import { LanguagesMainTest } from './languages-test-main';
+import { LanguagesMainTestImpl } from './languages-test-main';
 import { PluginHandleRegistry } from './plugin-handle-registry';
 
 export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(PluginHandleRegistry).toSelf().inSingletonScope();
-    rebind(LanguagesMainImpl).to(LanguagesMainTest).inTransientScope();
+    rebind(LanguagesMainImpl).to(LanguagesMainTestImpl).inTransientScope();
 });
