@@ -21,12 +21,12 @@ import { LanguagesMainTest, LanguageServerAction } from './languages-test-main';
  * This class keeps a registry of which plugins map to which handle
  */
 
-export interface LanguageFeatureRegistrant {
+export interface LanguageFeatureRegistration {
     languagesMainImpl: LanguagesMainTest; // The languagesMain that registered this plugin in the registry
-    action: Map<LanguageServerAction, number>; // A map of language actions to their handle
+    providerHandles: Map<LanguageServerAction, number>; // A map of language actions to their handle
 }
 
 @injectable()
 export class PluginHandleRegistry {
-    pluginRegistrationMap: Map<string, LanguageFeatureRegistrant> = new Map();
+    pluginRegistrationMap: Map<string, LanguageFeatureRegistration> = new Map();
 }

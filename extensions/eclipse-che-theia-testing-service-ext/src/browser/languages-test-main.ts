@@ -21,39 +21,38 @@ import { LanguagesMainImpl } from '@theia/plugin-ext/lib/main/browser/languages-
 import * as theia from '@theia/plugin';
 import { PluginHandleRegistry } from './plugin-handle-registry';
 import { WorkspaceSymbolParams } from '@theia/plugin-ext/lib/common/plugin-api-rpc-model';
-import { LanguageMainTestInterface } from '../common/test-protocol';
+import { LanguagesMainTest } from '../common/test-protocol';
 
 export type LanguageServerAction = string;
-export const LanguageServerActions = {
-    'completion': 'completion',
-    'definition': 'definition',
-    'declaration': 'declaration',
-    'signatureHelp': 'signatureHelp',
-    'implementation': 'implementation',
-    'typeDefinition': 'typeDefinition',
-    'hover': 'hover',
-    'documentHighlight': 'documentHighlight',
-    'workspaceSymbols': 'workspaceSymbols',
-    'documentFormattingEdits': 'documentFormattingEdits',
-    'documentRangeFormattingEdits': 'documentRangeFormattingEdits',
-    'onTypeFormattingEdits': 'onTypeFormattingEdits',
-    'documentLinks': 'documentLinks',
-    'codeActions': 'codeActions',
-    'codeLenses': 'codeLenses',
-    'references': 'references',
-    'symbols': 'symbols',
-    'documentColors': 'documentColors',
-    'foldingRange': 'foldingRange',
-    'renameEdits': 'renameEdits'
-};
+export type LanguageServerActions =
+    'completion' |
+    'definition' |
+    'declaration' |
+    'signatureHelp' |
+    'implementation' |
+    'typeDefinition' |
+    'hover' |
+    'documentHighlight' |
+    'workspaceSymbols' |
+    'documentFormattingEdits' |
+    'documentRangeFormattingEdits' |
+    'onTypeFormattingEdits' |
+    'documentLinks' |
+    'codeActions' |
+    'codeLenses' |
+    'references' |
+    'symbols' |
+    'documentColors' |
+    'foldingRange' |
+    'renameEdits';
 
 export interface LanguagesMainHandle {
     handle: number;
-    languagesMain: LanguagesMainTest;
+    languagesMain: LanguagesMainTestImpl;
 }
 
 @injectable()
-export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMainTestInterface {
+export class LanguagesMainTestImpl extends LanguagesMainImpl implements LanguagesMainTest {
 
     @inject(PluginHandleRegistry)
     private readonly pluginHandleRegistry: PluginHandleRegistry;
@@ -62,11 +61,11 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
         return new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    private tryToFindRegisteredAction(pluginID: string, languageServerAction: string) {
+    private findRegisteredLanguagesMain(pluginID: string, languageServerAction: string): LanguagesMainHandle | undefined {
         const languageFeatureRegistrant = this.pluginHandleRegistry.pluginRegistrationMap.get(pluginID);
         if (languageFeatureRegistrant) {
             const correctLanguagesMain = languageFeatureRegistrant.languagesMainImpl;
-            const correctLanguageServerHandle = languageFeatureRegistrant.action.get(languageServerAction);
+            const correctLanguageServerHandle = languageFeatureRegistrant.providerHandles.get(languageServerAction);
             if (correctLanguageServerHandle) {
                 return {
                     handle: correctLanguageServerHandle,
@@ -77,7 +76,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
         return undefined;
     }
 
-    private async lookupLanguagesMainForPluginAndAction(pluginID: string, languageServerAction: string): Promise<LanguagesMainHandle | undefined> {
+    private async lookupLanguagesMainForPluginAndAction(pluginID: string, languageServerAction: LanguageServerAction): Promise<LanguagesMainHandle | undefined> {
         /**
          * Sometimes a language feature hasn't been registered before a language call is made. That is OK. We can block while waiting for the language server
          * to register the feature with languages-main. The tests will timeout if it hasn't registered in 60 seconds after the test made the original call.
@@ -85,11 +84,11 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
         const amount = 60;
         for (let i = 0; i < amount; i++) {
 
-            const isRegistered = this.tryToFindRegisteredAction(pluginID, languageServerAction);
-            if (!isRegistered) {
+            const registeredLanguagesMain = this.findRegisteredLanguagesMain(pluginID, languageServerAction);
+            if (!registeredLanguagesMain) {
                 await this.sleep(1000);
             } else {
-                return isRegistered;
+                return registeredLanguagesMain;
             }
         }
 
@@ -99,7 +98,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
     $provideCompletionItems(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
         context: monaco.languages.CompletionContext, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.CompletionList> {
 
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.completion).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'completion').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideCompletionItems(potentialLanguagesMain.handle, model, position, context, token);
             }
@@ -109,7 +108,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideDefinition(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Definition> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.definition).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'definition').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideDefinition(potentialLanguagesMain.handle, model, position, token);
             }
@@ -119,7 +118,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideDeclaration(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Definition> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.declaration).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'declaration').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideDeclaration(potentialLanguagesMain.handle, model, position, token);
             }
@@ -128,7 +127,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideSignatureHelp(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
         token: monaco.CancellationToken, context: monaco.languages.SignatureHelpContext): Promise<monaco.languages.ProviderResult<monaco.languages.SignatureHelpResult>> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.signatureHelp).then(potentialLanguageMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'signatureHelp').then(potentialLanguageMain => {
             if (potentialLanguageMain) {
                 return potentialLanguageMain.languagesMain.provideSignatureHelp(potentialLanguageMain.handle, model, position, token, context);
             }
@@ -138,7 +137,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideImplementation(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Definition> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.implementation).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'implementation').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideImplementation(potentialLanguagesMain.handle, model, position, token);
             }
@@ -147,7 +146,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideTypeDefinition(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Definition> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.typeDefinition).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'typeDefinition').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideTypeDefinition(potentialLanguagesMain.handle, model, position, token);
             }
@@ -156,7 +155,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideHover(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Hover> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.hover).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'hover').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideHover(potentialLanguagesMain.handle, model, position, token);
             }
@@ -165,7 +164,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideDocumentHighlights(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.DocumentHighlight[]> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.documentHighlight).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'documentHighlight').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideDocumentHighlights(potentialLanguagesMain.handle, model, position, token);
             }
@@ -174,7 +173,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideWorkspaceSymbols(pluginID: string, params: WorkspaceSymbolParams,
         token: monaco.CancellationToken): Thenable<import('vscode-languageserver-types').SymbolInformation[]> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.workspaceSymbols).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'workspaceSymbols').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideWorkspaceSymbols(potentialLanguagesMain.handle, params, token);
             }
@@ -184,7 +183,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideDocumentFormattingEdits(pluginID: string, model: monaco.editor.ITextModel, options: monaco.languages.FormattingOptions,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.documentFormattingEdits).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'documentFormattingEdits').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideDocumentFormattingEdits(potentialLanguagesMain.handle, model, options, token);
             }
@@ -194,7 +193,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
     // tslint:disable-next-line:no-any
     $provideDocumentRangeFormattingEdits(pluginID: string, model: monaco.editor.ITextModel, range: any, options: monaco.languages.FormattingOptions,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.documentRangeFormattingEdits).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'documentRangeFormattingEdits').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideDocumentRangeFormattingEdits(potentialLanguagesMain.handle, model, range, options, token);
             }
@@ -203,7 +202,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideOnTypeFormattingEdits(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position, ch: string, options: monaco.languages.FormattingOptions,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.onTypeFormattingEdits).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'onTypeFormattingEdits').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideOnTypeFormattingEdits(potentialLanguagesMain.handle, model, position, ch, options, token);
             }
@@ -211,7 +210,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
     }
 
     $provideLinks(pluginID: string, model: monaco.editor.ITextModel, token: monaco.CancellationToken): Promise<monaco.languages.ProviderResult<monaco.languages.ILinksList>> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.documentLinks).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'documentLinks').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideLinks(potentialLanguagesMain.handle, model, token);
             }
@@ -222,7 +221,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
     // tslint:disable-next-line:no-any
     $provideCodeActions(pluginID: string, model: monaco.editor.ITextModel, rangeOrSelection: any, context: monaco.languages.CodeActionContext,
         token: monaco.CancellationToken): Promise<monaco.languages.CodeActionList | Promise<monaco.languages.CodeActionList>> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.codeActions).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'codeActions').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideCodeActions(potentialLanguagesMain.handle, model, rangeOrSelection, context, token);
             }
@@ -235,7 +234,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideCodeLenses(pluginID: string, model: monaco.editor.ITextModel,
         token: monaco.CancellationToken): Promise<monaco.languages.ProviderResult<monaco.languages.CodeLensList>> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.codeLenses).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'codeLenses').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideCodeLenses(potentialLanguagesMain.handle, model, token);
             }
@@ -245,7 +244,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideReferences(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position, context: monaco.languages.ReferenceContext,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Location[]> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.references).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'references').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideReferences(potentialLanguagesMain.handle, model, position, context, token);
             }
@@ -255,7 +254,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideDocumentColors(pluginID: string, model: monaco.editor.ITextModel,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.IColorInformation[]> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.documentColors).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'documentColors').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideDocumentColors(potentialLanguagesMain.handle, model, token);
             }
@@ -265,7 +264,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideFoldingRanges(pluginID: string, model: monaco.editor.ITextModel, context: monaco.languages.FoldingContext,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.FoldingRange[]> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.foldingRange).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'foldingRange').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideFoldingRanges(potentialLanguagesMain.handle, model, context, token);
             }
@@ -275,7 +274,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideRenameEdits(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position, newName: string,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.WorkspaceEdit & monaco.languages.Rejection> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.renameEdits).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'renameEdits').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideRenameEdits(potentialLanguagesMain.handle, model, position, newName, token);
             }
@@ -285,7 +284,7 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
 
     $provideDocumentSymbols(pluginID: string, model: monaco.editor.ITextModel,
         token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.DocumentSymbol[]> {
-        return this.lookupLanguagesMainForPluginAndAction(pluginID, LanguageServerActions.symbols).then(potentialLanguagesMain => {
+        return this.lookupLanguagesMainForPluginAndAction(pluginID, 'symbols').then(potentialLanguagesMain => {
             if (potentialLanguagesMain) {
                 return potentialLanguagesMain.languagesMain.provideDocumentSymbols(potentialLanguagesMain.handle, model, token);
             }
@@ -296,107 +295,107 @@ export class LanguagesMainTest extends LanguagesMainImpl implements LanguageMain
     // tslint:disable
     $registerCompletionSupport(handle: number, pluginInfo: PluginInfo,
         selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.completion);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'completion');
         super.$registerCompletionSupport(handle, pluginInfo, selector, triggerCharacters, supportsResolveDetails);
     }
 
     $registerDefinitionProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.definition);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'definition');
         super.$registerDefinitionProvider(handle, pluginInfo, selector);
     }
 
     $registerDeclarationProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.declaration);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'declaration');
         super.$registerDeclarationProvider(handle, pluginInfo, selector);
     }
 
     $registerReferenceProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.references);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'references');
         super.$registerReferenceProvider(handle, pluginInfo, selector);
     }
 
     $registerSignatureHelpProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[], metadata: theia.SignatureHelpProviderMetadata): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.signatureHelp);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'signatureHelp');
         super.$registerSignatureHelpProvider(handle, pluginInfo, selector, metadata);
     }
 
     $registerImplementationProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.implementation);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'implementation');
         super.$registerImplementationProvider(handle, pluginInfo, selector);
     }
 
     $registerTypeDefinitionProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.typeDefinition);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'typeDefinition');
         super.$registerTypeDefinitionProvider(handle, pluginInfo, selector);
     }
 
     $registerHoverProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.hover);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'hover');
         super.$registerHoverProvider(handle, pluginInfo, selector);
     }
 
     $registerDocumentHighlightProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.documentHighlight);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'documentHighlight');
         super.$registerDocumentHighlightProvider(handle, pluginInfo, selector);
     }
 
     $registerWorkspaceSymbolProvider(handle: number, pluginInfo: PluginInfo): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.workspaceSymbols);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'workspaceSymbols');
         super.$registerWorkspaceSymbolProvider(handle, pluginInfo);
     }
 
     $registerDocumentLinkProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.documentLinks);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'documentLinks');
         super.$registerDocumentLinkProvider(handle, pluginInfo, selector);
     }
 
     $registerCodeLensSupport(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[], eventHandle: number): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.codeLenses);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'codeLenses');
         super.$registerCodeLensSupport(handle, pluginInfo, selector, eventHandle);
     }
 
     $registerOutlineSupport(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.symbols);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'symbols');
         super.$registerOutlineSupport(handle, pluginInfo, selector);
     }
 
     $registerDocumentFormattingSupport(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.documentFormattingEdits);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'documentFormattingEdits');
         super.$registerDocumentFormattingSupport(handle, pluginInfo, selector);
     }
 
     $registerRangeFormattingProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.documentRangeFormattingEdits);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'documentRangeFormattingEdits');
         super.$registerRangeFormattingProvider(handle, pluginInfo, selector);
     }
 
     $registerOnTypeFormattingProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[], autoFormatTriggerCharacters: string[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.onTypeFormattingEdits);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'onTypeFormattingEdits');
         super.$registerOnTypeFormattingProvider(handle, pluginInfo, selector, autoFormatTriggerCharacters);
     }
 
     $registerFoldingRangeProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.foldingRange);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'foldingRange');
         super.$registerFoldingRangeProvider(handle, pluginInfo, selector);
     }
 
     $registerDocumentColorProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.documentColors);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'documentColors');
         super.$registerDocumentColorProvider(handle, pluginInfo, selector);
     }
 
     $registerRenameProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[], supportsResolveLocation: boolean): void {
-        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, LanguageServerActions.renameEdits);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id, 'renameEdits');
         super.$registerRenameProvider(handle, pluginInfo, selector, supportsResolveLocation);
     }
 
-    private registerPluginWithFeatureHandle(handle: number, extensionID: string, newlyRegisteredAction: string): void {
-        if (this.pluginHandleRegistry.pluginRegistrationMap.has(extensionID)) {
-            (this.pluginHandleRegistry.pluginRegistrationMap.get(extensionID) as any).action.set(newlyRegisteredAction, handle);
+    private registerPluginWithFeatureHandle(handle: number, extensionId: string, newlyRegisteredAction: string): void {
+        if (this.pluginHandleRegistry.pluginRegistrationMap.has(extensionId)) {
+            (this.pluginHandleRegistry.pluginRegistrationMap.get(extensionId) as any).action.set(newlyRegisteredAction, handle);
         } else {
-            this.pluginHandleRegistry.pluginRegistrationMap.set(extensionID,
+            this.pluginHandleRegistry.pluginRegistrationMap.set(extensionId,
                 {
-                    action: new Map().set(newlyRegisteredAction, handle),
+                    providerHandles: new Map().set(newlyRegisteredAction, handle),
                     languagesMainImpl: this
                 });
         }

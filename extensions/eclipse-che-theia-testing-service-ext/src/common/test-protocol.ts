@@ -16,7 +16,7 @@
 import * as vst from 'vscode-languageserver-types';
 
 // Expose additional API that allows you to know if a language server is connected and build a map of the language servers
-export interface LanguageMainTestInterface {
+export interface LanguagesMainTest {
     // tslint:disable-next-line:no-any
     $provideCompletionItems(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
         context: monaco.languages.CompletionContext, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.CompletionList>;
