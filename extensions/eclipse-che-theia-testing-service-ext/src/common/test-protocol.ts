@@ -13,66 +13,85 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import * as vst from 'vscode-languageserver-types';
+import {
+    CompletionContext,
+    CompletionResultDto,
+    SignatureHelp,
+    Hover,
+    DocumentHighlight,
+    Range,
+    TextEdit,
+    FormattingOptions,
+    Definition,
+    DefinitionLink,
+    DocumentLink,
+    CodeLensSymbol,
+    DocumentSymbol,
+    ReferenceContext,
+    Location,
+    SignatureHelpContext,
+    CodeActionContext,
+    CodeAction,
+    FoldingRange,
+} from '@theia/plugin-ext/lib/common/plugin-api-rpc-model';
+import { UriComponents } from '@theia/plugin-ext/lib/common/uri-components';
+import { CancellationToken, FoldingContext } from '@theia/plugin';
+import { SymbolInformation } from 'vscode-languageserver-types';
+import {
+    Position,
+    Selection,
+    RawColorInfo,
+    WorkspaceEditDto
+} from '@theia/plugin-ext/lib/common/plugin-api-rpc';
+import { ProxyIdentifier, createProxyIdentifier } from '@theia/plugin-ext/lib/common/rpc-protocol';
 
 // Expose additional API that allows you to know if a language server is connected and build a map of the language servers
-export interface LanguagesMainTest {
-    // tslint:disable-next-line:no-any
-    $provideCompletionItems(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
-        context: monaco.languages.CompletionContext, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.CompletionList>;
-    $provideDocumentSymbols(pluginID: string, model: monaco.editor.ITextModel, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.DocumentSymbol[]>;
-
-    $provideDefinition(pluginID: string, model: monaco.editor.ITextModel,
-        position: monaco.Position, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Definition>
-
-    $provideDeclaration(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
-        token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Definition>
-
-    $provideSignatureHelp(pluginID: string, model: monaco.editor.ITextModel,
-        position: monaco.Position, token: monaco.CancellationToken,
-        context: monaco.languages.SignatureHelpContext): Promise<monaco.languages.ProviderResult<monaco.languages.SignatureHelpResult>>
-
-    $provideImplementation(pluginID: string, model: monaco.editor.ITextModel,
-        position: monaco.Position, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Definition>
-
-    $provideTypeDefinition(pluginID: string, model: monaco.editor.ITextModel,
-        position: monaco.Position, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Definition>
-
-    $provideHover(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
-        token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Hover>
-
-    $provideDocumentHighlights(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
-        token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.DocumentHighlight[]>
-
-    $provideWorkspaceSymbols(pluginID: string, params: { query: string }, token: monaco.CancellationToken): Thenable<vst.SymbolInformation[]>
-
-    $provideDocumentFormattingEdits(pluginID: string, model: monaco.editor.ITextModel,
-        options: monaco.languages.FormattingOptions, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.TextEdit[]>
-
-    $provideDocumentRangeFormattingEdits(pluginID: string, model: monaco.editor.ITextModel,
-        range: Range, options: monaco.languages.FormattingOptions, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.TextEdit[]>
-
-    $provideOnTypeFormattingEdits(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
-        ch: string, options: monaco.languages.FormattingOptions, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.TextEdit[]>
-    $provideLinks(pluginID: string, model: monaco.editor.ITextModel,
-        token: monaco.CancellationToken): Promise<monaco.languages.ProviderResult<monaco.languages.ILinksList>>
-
-    $provideCodeActions(pluginID: string, model: monaco.editor.ITextModel,
-        rangeOrSelection: Range, context: monaco.languages.CodeActionContext,
-        token: monaco.CancellationToken): Promise<monaco.languages.CodeActionList | Promise<monaco.languages.CodeActionList>>
-
-    $provideCodeLenses(pluginID: string, model: monaco.editor.ITextModel,
-        token: monaco.CancellationToken): Promise<monaco.languages.ProviderResult<monaco.languages.CodeLensList>>
-
-    $provideReferences(pluginID: string, model: monaco.editor.ITextModel, position: monaco.Position,
-        context: monaco.languages.ReferenceContext, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.Location[]>
-
-    $provideDocumentColors(pluginID: string, model: monaco.editor.ITextModel,
-        token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.IColorInformation[]>
-
-    $provideFoldingRanges(pluginID: string, model: monaco.editor.ITextModel,
-        context: monaco.languages.FoldingContext, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.FoldingRange[]>
-
-    $provideRenameEdits(pluginID: string, model: monaco.editor.ITextModel,
-        position: monaco.Position, newName: string, token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.WorkspaceEdit & monaco.languages.Rejection>
+export interface TestAPI {
+    $provideCompletionItems(pluginID: string, resource: UriComponents, position: Position,
+        context: CompletionContext, token: CancellationToken): Promise<CompletionResultDto | undefined>;
+    $provideImplementation(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+    $provideTypeDefinition(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+    $provideDefinition(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+    $provideDeclaration(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+    $provideReferences(pluginID: string, resource: UriComponents, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined>;
+    $provideSignatureHelp(
+        pluginID: string, resource: UriComponents, position: Position, context: SignatureHelpContext, token: CancellationToken
+    ): Promise<SignatureHelp | undefined>;
+    $provideHover(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Hover | undefined>;
+    $provideDocumentHighlights(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined>;
+    $provideDocumentFormattingEdits(pluginID: string, resource: UriComponents,
+        options: FormattingOptions, token: CancellationToken): Promise<TextEdit[] | undefined>;
+    $provideDocumentRangeFormattingEdits(pluginID: string, resource: UriComponents, range: Range,
+        options: FormattingOptions, token: CancellationToken): Promise<TextEdit[] | undefined>;
+    $provideOnTypeFormattingEdits(
+        pluginID: string,
+        resource: UriComponents,
+        position: Position,
+        ch: string,
+        options: FormattingOptions,
+        token: CancellationToken
+    ): Promise<TextEdit[] | undefined>;
+    $provideDocumentLinks(pluginID: string, resource: UriComponents, token: CancellationToken): Promise<DocumentLink[] | undefined>;
+    $provideCodeLenses(pluginID: string, resource: UriComponents, token: CancellationToken): Promise<CodeLensSymbol[] | undefined>;
+    $provideCodeActions(
+        pluginID: string,
+        resource: UriComponents,
+        rangeOrSelection: Range | Selection,
+        context: CodeActionContext,
+        token: CancellationToken
+    ): Promise<CodeAction[] | undefined>;
+    $provideDocumentSymbols(pluginID: string, resource: UriComponents, token: CancellationToken): Promise<DocumentSymbol[] | undefined>;
+    $provideWorkspaceSymbols(pluginID: string, query: string, token: CancellationToken): PromiseLike<SymbolInformation[]>;
+    $provideFoldingRange(
+        pluginID: string,
+        resource: UriComponents,
+        context: FoldingContext,
+        token: CancellationToken
+    ): PromiseLike<FoldingRange[] | undefined>;
+    $provideDocumentColors(pluginID: string, resource: UriComponents, token: CancellationToken): PromiseLike<RawColorInfo[]>;
+    $provideRenameEdits(pluginID: string, resource: UriComponents, position: Position, newName: string, token: CancellationToken): PromiseLike<WorkspaceEditDto | undefined>;
 }
+
+export const PLUGIN_RPC_CONTEXT = {
+    TEST_API_MAIN: <ProxyIdentifier<TestAPI>>createProxyIdentifier<TestAPI>('TestAPI'),
+};
