@@ -47,7 +47,8 @@ export class MachinesPicker {
             window.showQuickPick(items, {
                 placeHolder: CONTAINERS_PLACE_HOLDER,
                 ignoreFocusOut: false,
-                onDidSelectItem: (item => {
+                // tslint:disable-next-line:no-any
+                onDidSelectItem: ((item: any) => {
                     resolve((<QuickPickItem>item).label);
                 })
             });
