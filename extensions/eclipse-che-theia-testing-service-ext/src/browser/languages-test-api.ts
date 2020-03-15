@@ -12,35 +12,40 @@ import { PluginHandleRegistry } from './plugin-handle-registry';
 import { interfaces } from 'inversify';
 import { TestAPI } from '../common/test-protocol';
 import {
+    TextDocument,
+    CancellationToken,
     CompletionContext,
-    CompletionResultDto,
-    SignatureHelp,
-    Hover,
-    DocumentHighlight,
-    Range,
-    TextEdit,
-    FormattingOptions,
-    Definition,
-    DefinitionLink,
-    DocumentLink,
-    CodeLensSymbol,
-    DocumentSymbol,
     ReferenceContext,
-    Location,
     SignatureHelpContext,
-    CodeActionContext,
-    CodeAction,
-    FoldingRange,
-} from '@theia/plugin-ext/lib/common/plugin-api-rpc-model';
-import { UriComponents } from '@theia/plugin-ext/lib/common/uri-components';
-import { CancellationToken, FoldingContext } from '@theia/plugin';
-import { SymbolInformation } from 'vscode-languageserver-types';
+    FormattingOptions,
+    FoldingContext
+} from '@theia/plugin';
 import {
     Position,
-    Selection,
+    Selection
+} from '@theia/plugin-ext/lib/common/plugin-api-rpc';
+import {
     RawColorInfo,
     WorkspaceEditDto
 } from '@theia/plugin-ext/lib/common/plugin-api-rpc';
+import {
+    CompletionResultDto,
+    SignatureHelp,
+    Hover,
+    Range,
+    TextEdit,
+    Location,
+    DocumentHighlight,
+    DocumentLink,
+    CodeAction,
+    DocumentSymbol,
+    FoldingRange,
+    CodeActionContext,
+    CodeLensSymbol,
+    Definition,
+    DefinitionLink
+} from '@theia/plugin-ext/lib/common/plugin-api-rpc-model';
+import { SymbolInformation } from 'vscode-languageserver-types';
 
 /**
  * This class redirects language api requests to the correct sidecars and returns the results
@@ -53,46 +58,46 @@ export class TestAPIImpl implements TestAPI {
         this.pluginHandleRegistry = container.get(PluginHandleRegistry);
     }
 
-    async $provideCompletionItems(pluginID: string, resource: UriComponents, position: Position,
+    async $provideCompletionItems(pluginID: string, document: TextDocument, position: Position,
         context: CompletionContext, token: CancellationToken): Promise<CompletionResultDto | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'completion');
-        return languagesExt.$provideCompletionItems(handle, resource, position, context, token);
+        return languagesExt.$provideCompletionItems(handle, document.uri, position, context, token);
     }
 
-    async $provideDefinition(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
+    async $provideDefinition(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'definition');
-        return languagesExt.$provideDefinition(handle, resource, position, token);
+        return languagesExt.$provideDefinition(handle, document.uri, position, token);
     }
 
-    async $provideDeclaration(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
+    async $provideDeclaration(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'declaration');
-        return languagesExt.$provideDeclaration(handle, resource, position, token);
+        return languagesExt.$provideDeclaration(handle, document.uri, position, token);
     }
 
-    async $provideSignatureHelp(pluginID: string, resource: UriComponents, position: Position, context: SignatureHelpContext, token: CancellationToken
+    async $provideSignatureHelp(pluginID: string, document: TextDocument, position: Position, context: SignatureHelpContext, token: CancellationToken
     ): Promise<SignatureHelp | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'signatureHelp');
-        return languagesExt.$provideSignatureHelp(handle, resource, position, context, token);
+        return languagesExt.$provideSignatureHelp(handle, document.uri, position, context, token);
     }
 
-    async $provideImplementation(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
+    async $provideImplementation(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'implementation');
-        return languagesExt.$provideImplementation(handle, resource, position, token);
+        return languagesExt.$provideImplementation(handle, document.uri, position, token);
     }
 
-    async $provideTypeDefinition(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
+    async $provideTypeDefinition(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'typeDefinition');
-        return languagesExt.$provideTypeDefinition(handle, resource, position, token);
+        return languagesExt.$provideTypeDefinition(handle, document.uri, position, token);
     }
 
-    async $provideHover(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Hover | undefined> {
+    async $provideHover(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Hover | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'hover');
-        return languagesExt.$provideHover(handle, resource, position, token);
+        return languagesExt.$provideHover(handle, document.uri, position, token);
     }
 
-    async $provideDocumentHighlights(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined> {
+    async $provideDocumentHighlights(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'documentHighlight');
-        return languagesExt.$provideDocumentHighlights(handle, resource, position, token);
+        return languagesExt.$provideDocumentHighlights(handle, document.uri, position, token);
     }
 
     $provideWorkspaceSymbols(pluginID: string, query: string, token: CancellationToken): PromiseLike<SymbolInformation[]> {
@@ -101,80 +106,80 @@ export class TestAPIImpl implements TestAPI {
         );
     }
 
-    async $provideDocumentFormattingEdits(pluginID: string, resource: UriComponents,
+    async $provideDocumentFormattingEdits(pluginID: string, document: TextDocument,
         options: FormattingOptions, token: CancellationToken): Promise<TextEdit[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'documentFormattingEdits');
-        return languagesExt.$provideDocumentFormattingEdits(handle, resource, options, token);
+        return languagesExt.$provideDocumentFormattingEdits(handle, document.uri, options, token);
     }
 
     // tslint:disable-next-line:no-any
-    async $provideDocumentRangeFormattingEdits(pluginID: string, resource: UriComponents, range: Range,
+    async $provideDocumentRangeFormattingEdits(pluginID: string, document: TextDocument, range: Range,
         options: FormattingOptions, token: CancellationToken): Promise<TextEdit[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'documentRangeFormattingEdits');
-        return languagesExt.$provideDocumentRangeFormattingEdits(handle, resource, range, options, token);
+        return languagesExt.$provideDocumentRangeFormattingEdits(handle, document.uri, range, options, token);
     }
 
     async $provideOnTypeFormattingEdits(pluginID: string,
-        resource: UriComponents,
+        document: TextDocument,
         position: Position,
         ch: string,
         options: FormattingOptions,
         token: CancellationToken
     ): Promise<TextEdit[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'onTypeFormattingEdits');
-        return languagesExt.$provideOnTypeFormattingEdits(handle, resource, position, ch, options, token);
+        return languagesExt.$provideOnTypeFormattingEdits(handle, document.uri, position, ch, options, token);
     }
 
-    async $provideDocumentLinks(pluginID: string, resource: UriComponents, token: CancellationToken): Promise<DocumentLink[] | undefined> {
+    async $provideDocumentLinks(pluginID: string, document: TextDocument, token: CancellationToken): Promise<DocumentLink[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'documentLinks');
-        return languagesExt.$provideDocumentLinks(handle, resource, token);
+        return languagesExt.$provideDocumentLinks(handle, document.uri, token);
     }
 
     // tslint:disable-next-line:no-any
     async $provideCodeActions(pluginID: string,
-        resource: UriComponents,
+        document: TextDocument,
         rangeOrSelection: Range | Selection,
         context: CodeActionContext,
         token: CancellationToken
     ): Promise<CodeAction[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'codeActions');
-        return languagesExt.$provideCodeActions(handle, resource, rangeOrSelection, context, token);
+        return languagesExt.$provideCodeActions(handle, document.uri, rangeOrSelection, context, token);
     }
 
-    async $provideCodeLenses(pluginID: string, resource: UriComponents, token: CancellationToken): Promise<CodeLensSymbol[] | undefined> {
+    async $provideCodeLenses(pluginID: string, document: TextDocument, token: CancellationToken): Promise<CodeLensSymbol[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'codeLenses');
-        return languagesExt.$provideCodeLenses(handle, resource, token);
+        return languagesExt.$provideCodeLenses(handle, document.uri, token);
     }
 
-    async $provideReferences(pluginID: string, resource: UriComponents, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined> {
+    async $provideReferences(pluginID: string, document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'references');
-        return languagesExt.$provideReferences(handle, resource, position, context, token);
+        return languagesExt.$provideReferences(handle, document.uri, position, context, token);
     }
 
-    $provideDocumentColors(pluginID: string, resource: UriComponents, token: CancellationToken): PromiseLike<RawColorInfo[]> {
+    $provideDocumentColors(pluginID: string, document: TextDocument, token: CancellationToken): PromiseLike<RawColorInfo[]> {
         return this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'documentColors').then(({ languagesExt, handle }) =>
-            languagesExt.$provideDocumentColors(handle, resource, token)
+            languagesExt.$provideDocumentColors(handle, document.uri, token)
         );
     }
 
     $provideFoldingRange(pluginID: string,
-        resource: UriComponents,
+        document: TextDocument,
         context: FoldingContext,
         token: CancellationToken
     ): PromiseLike<FoldingRange[] | undefined> {
         return this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'foldingRange').then(({ languagesExt, handle }) =>
-            languagesExt.$provideFoldingRange(handle, resource, context, token)
+            languagesExt.$provideFoldingRange(handle, document.uri, context, token)
         );
     }
 
-    $provideRenameEdits(pluginID: string, resource: UriComponents, position: Position, newName: string, token: CancellationToken): PromiseLike<WorkspaceEditDto | undefined> {
+    $provideRenameEdits(pluginID: string, document: TextDocument, position: Position, newName: string, token: CancellationToken): PromiseLike<WorkspaceEditDto | undefined> {
         return this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'renameEdits').then(({ languagesExt, handle }) =>
-            languagesExt.$provideRenameEdits(handle, resource, position, newName, token)
+            languagesExt.$provideRenameEdits(handle, document.uri, position, newName, token)
         );
     }
 
-    async $provideDocumentSymbols(pluginID: string, resource: UriComponents, token: CancellationToken): Promise<DocumentSymbol[] | undefined> {
+    async $provideDocumentSymbols(pluginID: string, document: TextDocument, token: CancellationToken): Promise<DocumentSymbol[] | undefined> {
         const { languagesExt, handle } = await this.pluginHandleRegistry.lookupLanguagesExtForPluginAndAction(pluginID, 'symbols');
-        return languagesExt.$provideDocumentSymbols(handle, resource, token);
+        return languagesExt.$provideDocumentSymbols(handle, document.uri, token);
     }
 }

@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "Theia - TestService Extension",
   "dependencies": {
-    "@theia/plugin": "^0.15.0",
-    "@theia/plugin-ext": "^0.15.0",
+    "@theia/plugin": "^0.16.0",
+    "@theia/plugin-ext": "^0.16.0",
     "@eclipse-che/testing-service": "^0.0.1",
     "glob": "^7.1.6",
     "mocha": "^3.4.2"

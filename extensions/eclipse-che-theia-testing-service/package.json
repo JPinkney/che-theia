@@ -29,8 +29,8 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@theia/plugin": "next",
-    "@theia/plugin-ext": "next"
+    "@theia/plugin": "^0.16.0",
+    "@theia/plugin-ext": "^0.16.0"
   },
   "devDependencies": {}
 }

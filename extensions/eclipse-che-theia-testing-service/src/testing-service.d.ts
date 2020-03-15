@@ -14,84 +14,78 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import * as vst from 'vscode-languageserver-types';
+import { TextDocument } from '@theia/plugin';
 import {
-    CompletionContext,
-    CompletionResultDto,
-    SignatureHelp,
-    Hover,
-    DocumentHighlight,
-    Range,
-    TextEdit,
-    FormattingOptions,
-    Definition,
-    DefinitionLink,
-    DocumentLink,
-    CodeLensSymbol,
-    DocumentSymbol,
-    ReferenceContext,
-    Location,
-    SignatureHelpContext,
-    CodeActionContext,
-    CodeAction,
-    FoldingRange,
+    CompletionResultDto, DocumentSymbol, FoldingRange, Location, Range, CodeActionContext, CodeAction, DocumentLink, TextEdit,
+    DocumentHighlight, Definition, DefinitionLink, SignatureHelp, Hover
 } from '@theia/plugin-ext/lib/common/plugin-api-rpc-model';
-import { UriComponents } from '@theia/plugin-ext/lib/common/uri-components';
-import { CancellationToken, FoldingContext } from '@theia/plugin';
-import { SymbolInformation } from 'vscode-languageserver-types';
+import {
+    SymbolInformation
+} from 'vscode-languageserver-types';
 import {
     Position,
-    Selection,
-    RawColorInfo,
-    WorkspaceEditDto
+    Selection
 } from '@theia/plugin-ext/lib/common/plugin-api-rpc';
 
 declare module '@eclipse-che/testing-service' {
 
+    export { TextDocument } from '@theia/plugin';
+    export {
+        CompletionResultDto, DocumentSymbol, FoldingRange, Location, Range, CodeActionContext, CodeAction, DocumentLink, TextEdit,
+        DocumentHighlight, Definition, DefinitionLink, SignatureHelp, Hover
+    } from '@theia/plugin-ext/lib/common/plugin-api-rpc-model';
+    export {
+        SymbolInformation
+    } from 'vscode-languageserver-types';
+    export {
+        Position,
+        Selection
+    } from '@theia/plugin-ext/lib/common/plugin-api-rpc';
+
     export namespace languageserver {
-        export function completion(pluginID: string, resource: UriComponents, position: Position,
+        export function completion(pluginID: string, document: TextDocument, position: Position,
             context: CompletionContext, token: CancellationToken): Promise<CompletionResultDto | undefined>;
-        export function implementation(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
-        export function typeDefinition(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
-        export function definition(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
-        export function declaration(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
-        export function references(pluginID: string, resource: UriComponents, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined>;
+        export function implementation(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+        export function typeDefinition(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+        export function definition(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+        export function declaration(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+        export function references(pluginID: string, document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken): Promise<theia.Location[] | undefined>;
         export function signatureHelp(
-            pluginID: string, resource: UriComponents, position: Position, context: SignatureHelpContext, token: CancellationToken
+            pluginID: string, document: TextDocument, position: Position, context: SignatureHelpContext, token: CancellationToken
         ): Promise<SignatureHelp | undefined>;
-        export function hover(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<Hover | undefined>;
-        export function documentHighlights(pluginID: string, resource: UriComponents, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined>;
-        export function documentFormattingEdits(pluginID: string, resource: UriComponents,
+        export function hover(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<Hover | undefined>;
+        export function documentHighlights(pluginID: string, document: TextDocument, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined>;
+        export function documentFormattingEdits(pluginID: string, document: TextDocument,
             options: FormattingOptions, token: CancellationToken): Promise<TextEdit[] | undefined>;
-        export function documentRangeFormattingEdits(pluginID: string, resource: UriComponents, range: Range,
-            options: FormattingOptions, token: CancellationToken): Promise<TextEdit[] | undefined>;
+        export function documentRangeFormattingEdits(pluginID: string, document: TextDocument, range: theia.Range,
+            options: FormattingOptions, token: CancellationToken): Promise<theia.TextEdit[] | undefined>;
         export function onTypeFormattingEdits(
             pluginID: string,
-            resource: UriComponents,
+            document: TextDocument,
             position: Position,
             ch: string,
             options: FormattingOptions,
             token: CancellationToken
         ): Promise<TextEdit[] | undefined>;
-        export function documentLinks(pluginID: string, resource: UriComponents, token: CancellationToken): Promise<DocumentLink[] | undefined>;
-        export function codeLenses(pluginID: string, resource: UriComponents, token: CancellationToken): Promise<CodeLensSymbol[] | undefined>;
+        export function documentLinks(pluginID: string, document: TextDocument, token: CancellationToken): Promise<DocumentLink[] | undefined>;
+        export function codeLenses(pluginID: string, document: TextDocument, token: CancellationToken): Promise<CodeLensSymbol[] | undefined>;
         export function codeActions(
             pluginID: string,
-            resource: UriComponents,
-            rangeOrSelection: Range | Selection,
-            context: CodeActionContext,
+            document: TextDocument,
+            rangeOrSelection: theia.Range | theia.Selection,
+            context: theia.CodeActionContext,
             token: CancellationToken
-        ): Promise<CodeAction[] | undefined>;
-        export function documentSymbols(pluginID: string, resource: UriComponents, token: CancellationToken): Promise<DocumentSymbol[] | undefined>;
+        ): Promise<theia.CodeAction[] | undefined>;
+        export function documentSymbols(pluginID: string, document: TextDocument, token: CancellationToken): Promise<DocumentSymbol[] | undefined>;
         export function workspaceSymbols(pluginID: string, query: string, token: CancellationToken): PromiseLike<SymbolInformation[]>;
         export function foldingRange(
             pluginID: string,
-            resource: UriComponents,
+            document: TextDocument,
             context: FoldingContext,
             token: CancellationToken
         ): PromiseLike<FoldingRange[] | undefined>;
-        export function documentColors(pluginID: string, resource: UriComponents, token: CancellationToken): PromiseLike<RawColorInfo[]>;
-        export function renameEdits(pluginID: string, resource: UriComponents, position: Position, newName: string, token: CancellationToken): PromiseLike<WorkspaceEditDto | undefined>;
+        export function documentColors(pluginID: string, document: TextDocument, token: CancellationToken): PromiseLike<RawColorInfo[]>;
+        export function renameEdits(pluginID: string, document: TextDocument, position: Position, newName: string, token: CancellationToken): PromiseLike<WorkspaceEditDto | undefined>;
     }
 
 }
